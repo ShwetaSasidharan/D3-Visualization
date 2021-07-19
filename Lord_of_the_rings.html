@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The Network of  The Lord of the Rings</title>
+  <!-- Import pure.css -->
+  <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/pure-min.css" integrity="sha384-cg6SkqEOCV1NbJoCu11+bm0NvBRc8IYLRGXkmNrqUBfTjmMYwNKPWBTIKyw9mHNJ" crossorigin="anonymous">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google font -->
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;700;900&display=swap" rel="stylesheet">
+<!-- import d3 -->
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-geo-projection.v3.min.js"></script>
+
+<!-- <script src="http://d3js.org/d3.v2.min.js?2.9.3"></script>
+- FIT5147 Data Exploration and Visualisation
+- Programming Exercise 3 D3 Template
+- Created by: Kadek Satriadi
+- Last update by Kadek Satriadi (27/04/2021)
+-->
+
+  <!-- custom style -->
+  <style>
+      
+  .link {
+  stroke: #aaa;
+      }
+
+stroke-width:2px;
+
+    .node text {
+    stroke:#333;
+    cursos:pointer;
+    }
+      
+    *{
+      font-family: 'Source Sans Pro', sans-serif;
+    }
+    h1{
+      font-weight: 900;
+    }
+     body{
+       background-color: lightgray;
+     }
+     .page{
+       width: 1200px;    
+       background-color: white;   
+       padding-left: 20px;
+       padding-right: 20px;
+       margin: auto;
+    }
+
+    .highlight-text {
+      fill: black;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .normal-text{
+
+    }
+      
+    main.tooltip {
+    position: absolute;     
+    text-align: center;     
+    width: 60px;          
+    height: 28px;         
+    padding: 2px;       
+    font: 12px sans-serif;    
+    background: lightsteelblue; 
+    border: 0px;    
+    border-radius: 8px;     
+    pointer-events: none; 
+    }
+      
+    svg{
+    cursor: pointer;
+    }
+      
+    .hover-link{
+       stroke: greenyellow;
+    }
+      
+    .highlight-link{
+      stroke: #ff7f00;
+    }
+      
+    .normal-link{
+      stroke: #bbb;
+      cursor: default;
+    }
+      
+    div.tooltips{
+      position: absolute;
+      background-color: white;
+      padding: 2px 10px 2px 10px;
+      border: 1px solid #555;
+    }
+      
+    #tooltip-text{
+        font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+    <!-- tooltip -->
+  <div id="tooltip-container">
+  </div>
+
+ <div class="page">
+    <!-- pure grid group -->
+    <div class="pure-g">
+        <div class="pure-u-2-3">
+            <div id="chart"></div>
+        </div>
+        <div class="pure-u-1-3">
+            <h1>The Network of <br/> The Lord of the Rings</h1>
+            <p>This visualisation depicts the interactions among characters in The Lord of the Rings: The Return of The King  movie.</p>
+
+            <h2>Two Dominating Couples</h2>
+            <p>Despite the fact that Sam and Frodo are (arguablly) the two key roles in the last movie of the The Lord of the Rings trilogy, their number of interaction is only slighly higher than the interaction between Gandalf and Pippin. Gandalf and Pippin played significant roles in the siege of Minas Tirith scenes. </p>
+            
+            <h2>Two Parallel Stories</h2>
+            <p>Two node clusters are apparent in the network. These clusters are facinating depictions of the two parallel stories in the movie. One story is about the journey to the Mount Doom that Frodo, Sam, and Gollum undertook, while the other story is about the wars that took place in Minas Tirith and Mordor.</p>
+        </div>
+    </div>
+    <!-- end pure grid group -->
+    <div class="pure-g">
+      <div class="pure-u-1-1 small-font">
+        <p><strong>Data source: </strong>Kaminski, Jermain; Schober, Michael; Albaladejo, Raymond; Zastupailo, Oleksandr; Hidalgo, C<U+00E9>sar, 2018, Moviegalaxies - Social Networks in Movies, https://doi.org/10.7910/DVN/T4HBA3, Harvard Dataverse, V3
+        </p>
+      </div>
+    </div> 
+      <!-- end pure grid group -->
+
+  </div> <!-- end page -->
+   
+<script type="text/javascript">
+var width = 750;
+var height = 700;
+
+// the data is stored online, use this path to load the data
+var dataPath = "https://raw.githubusercontent.com/KadekSatriadi/TheLordOfTheRingsNetworkData/main/LOTR_3.json";
+
+// select the svg element
+var svg = d3.select("#chart").append("svg").attr("width", width).attr("height", height);
+
+// your script goes here
+   
+// Loading the data with the actor interactions        
+d3.json(dataPath, function(data) {
+    
+  // Initialize the links
+  var link = svg
+    .selectAll("line")
+    .data(data.links)
+    .enter()
+    .append("line")
+    .attr("class", "link")
+    .style("stroke-width", function(d) { return (d.weight); })
+    .style("stroke", function(o) {
+       return (o.to === "PIPPIN" && o.from === "GANDALF" || o.to === "SAM" && o.from === "FRODO" ) ? '#ff7f00' : '#b8b8b8';});
+  
+  // Initialize the nodes
+  var node = svg
+    .selectAll("circle")
+    .data(data.nodes)
+    .enter()
+    .append("g")
+    .append("circle")
+    .attr("r", 8)
+    .style("fill", "#87CEFA")    
+
+  // Setting labels for the nodes 
+  var label = svg.selectAll(null)
+    .data(data.nodes)
+    .enter()
+    .append("text")
+    .text(function (d) { return d.name; })
+    .style("text-anchor", "right")
+    .style("fill", "#555")
+    .style("font-family", "Arial")
+    .style('font-weight', function (l) { return l.name === "FRODO" || l.name === "SAM" || l.name === "GANDALF" || l.name === "PIPPIN" ? "bold" : "bolder";}) // highlighting the text
+    .style('font-size', function (l) { return l.name === "FRODO" || l.name === "SAM" || l.name === "GANDALF" || l.name === "PIPPIN" ? "18px" : "13px";}); // highlighting the text
+    
+  // Setting text for node 
+  node.append("text")
+      .attr("dx", 16)
+      .attr("dy", "1.35em")
+      .text(function(d) { return d.name });
+  
+  // Create tooltips on link hover
+  var tooltips = d3.select("#tooltip-container")
+    .append("div")
+      .attr("id", "tooltip-text")
+      .attr("class", "tooltips")
+      .attr('style', 'position: absolute; opacity: 0;');
+    
+    // Hover on link Mouse Over
+    link.on('mouseover', function(d) {
+        d3.select(this).style("stroke","greenyellow")
+        .style('stroke-width',  function(d) { return (d.weight *2); })
+    tooltips
+      .transition()
+      .duration(100)
+      .style("opacity", 1)
+    tooltips
+        .html("<span style='color:grey'> </span>" + d.from + " interacted with " + d.to + " " +d.weight + " times." ) 
+        .style("left", (d3.mouse(this)[0]+30) + "px")
+        .style("top", (d3.mouse(this)[1]+30) + "px")
+});
+    
+    // Hover on link Mouse Out
+    link.on('mouseout', function() {
+        d3.select(this).style("stroke","#b8b8b8")
+        .style('stroke-width',  function(d) { return (d.weight); })
+        .style("stroke", function(o) {
+   return (o.source.id === 10 && o.target.id === 29 || o.source.id === 13 && o.target.id === 27 ) ? '#ff7f00' : '#b8b8b8';})
+      tooltips.style('opacity', 0)
+   });
+       
+    // Hover on node to Mouse Objectver
+    node.on('mouseover', function(d) {
+    link
+     .style('stroke-width', function (l) { return d === l.source || d === l.target ? 4 : d.weight;})
+    .style('stroke', function (l) { return d === l.source || d === l.target ? '#69b3b2' : '#b8b8b8';})
+    ;
+});
+
+    // Set the stroke width back to normal when mouse leaves the node.
+    node.on('mouseout', function() {
+      link.style('stroke-width',  function(d) { return (d.weight); })
+         .style("stroke", function(o) {
+       return (o.source.id === 10 && o.target.id === 29 || o.source.id === 13 && o.target.id === 27 ) ? '#ff7f00' : '#b8b8b8';});
+});
+  
+  // Let's list the force we wanna apply on the network
+  var simulation = d3.forceSimulation(data.nodes)         // Force algorithm is applied to data.nodes
+      .force("link", d3.forceLink()                       // This force provides links between nodes
+            .id(function(d) { return d.id; })                     // This provide  the id of a node
+            .links(data.links)                                    // and this the list of links
+      )
+       
+      .force("charge", d3.forceManyBody().strength(-300))       // This adds repulsion between nodes
+      .force("center", d3.forceCenter(width / 2, height / 2))     // This force attracts nodes to the center of the svg area
+      .on("end", ticked);
+
+  // This function is run at each iteration of the force algorithm, updating the nodes position
+  function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+    node
+        .attr("cx", function (d) { return d.x+6; })
+        .attr("cy", function(d) { return d.y-6; });
+      
+    label
+        .attr("x", function(d){ return d.x - 10; })
+        .attr("y", function (d) {return d.y + 13; });
+  }
+
+  });
+
+</script>
+</body>
+</html>
